@@ -1,5 +1,6 @@
 package com.example.springbootdemo.utils;
 
+import com.example.springbootdemo.domain.excel.StoreExt;
 import com.example.springbootdemo.domain.excel.StoreMaterialBlacklist;
 import com.example.springbootdemo.domain.excel.StoreMaterialBlacklistRequest;
 import okhttp3.*;
@@ -13,12 +14,35 @@ import java.util.stream.Collectors;
 
 public class OkHttpUtil {
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-    public static final String URL = "https://scm.pin-dao.cn/procurement/v1/storeBlacklist/batchInsert";
-    public static final String TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjZkOGZkNzJkLTQ5MTktNGJiMS04MWNlLThhNzRiNmQ1YzcwNyJ9.Xm1QmuFn5Apo7SIBmfN8FZReh-Dc903DY8UBwXmOvHqTBmKu2_OgkzjIvOYOYsY-33PrKQlFe873N0cgqjPVyQ";
+    public static final String PROD_URL = "https://scm.pin-dao.cn/procurement/v1/store/update";
+    public static final String TEST_URL = "https://scm-test.pin-dao.cn/procurement/v1/store/update";
+    public static final String PROD_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6ImJlYjAzMzVmLWNkMTQtNGQ4NS1iYWYzLTI1M2Q0MTI1ODYzMyJ9.WVjyQBA0oBi4s8FzmxFShbZXl_npYEiOey_bey1CeqwB413PALnCWcWeVI6sL6hI99u23Kz6Kc0LCAtmFcQCvw";
+    public static final String TEST_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjJkODRlM2Y4LWNkZmEtNGFlZi1iMTJkLWY4Zjk2NzRlOTIxNiJ9.xLaie14IXzKg3N6BWh2spFg7wJwx8jLUtkqWD3YTTrWWb1_BsJk4t3I_VcsD6xvJmwCZzNMg26XlZOiKLpbSCg";
 
 
     public static void main(String[] args) {
+//        OkHttpUtil okHttpUtil = new OkHttpUtil();
+//        HashMap<String, String> headers = new HashMap<>();
+//        headers.put("Authorization", TEST_TOKEN);
+//        okHttpUtil.sendPostRequest(TEST_URL, headers, "{\"code\":\"TGHNSZ0058\",\"defaultDcCode\":\"HBBJ03\",\"financialCenterCode\":\"00.09\",\"isBread\":1,\"virtualDcCode\":\"HBBJ92\",\"distributionDistance\":66.8,\"transferStrategy\":\"DEFAULT\"}");
+    }
 
+    public void batchUpdateStore(List<StoreExt> storeExtList) {
+        if (CollectionUtils.isEmpty(storeExtList)) {
+            return;
+        }
+        storeExtList.forEach(storeExt -> {
+            String body = JsonUtil.convertJsonString(storeExt);
+            System.out.println(body);
+            HashMap<String, String> headers = new HashMap<>();
+            headers.put("Authorization", PROD_TOKEN);
+            sendPostRequest(PROD_URL, headers, body);
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public void batchInsertStoreMaterialBlackList(List<StoreMaterialBlacklist> storeMaterialBlacklists) {
@@ -33,13 +57,18 @@ public class OkHttpUtil {
             StoreMaterialBlacklistRequest smBlackReq = StoreMaterialBlacklistRequest.builder()
                     .k3storeCodes(Collections.singletonList(k3storeCode))
                     .materialCodes(materialCodes)
-                    .comment("批量操作:业务规则整体变更")
+                    .comment("批量操作:业务规则整体变更, 取消")
                     .build();
             String body = JsonUtil.convertJsonString(smBlackReq);
             System.out.println(body);
             HashMap<String, String> headers = new HashMap<>();
-            headers.put("Authorization", TOKEN);
-            sendPostRequest(URL, headers, body);
+            headers.put("Authorization", TEST_TOKEN);
+            sendPostRequest(TEST_URL, headers, body);
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         });
 
 
