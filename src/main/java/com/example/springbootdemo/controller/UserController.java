@@ -1,13 +1,21 @@
 package com.example.springbootdemo.controller;
 
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.write.builder.ExcelWriterBuilder;
+import com.alibaba.excel.write.metadata.WriteSheet;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.springbootdemo.domain.excel.ExcelExportTest;
 import com.example.springbootdemo.entity.User;
 import com.example.springbootdemo.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.stereotype.Controller;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -53,5 +61,32 @@ public class UserController {
     @PostMapping("deleteByIds")
     public Boolean deleteByIds(@RequestBody List<Long> ids) {
         return userService.removeByIds(ids);
+    }
+
+    @GetMapping("export")
+    public void export(HttpServletResponse response) throws IOException {
+        String fileName = URLEncoder.encode(String.format("%s.xlsx", "订单支付数据"),
+                StandardCharsets.UTF_8.toString());
+        response.setContentType("application/force-download");
+        response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
+        ExcelWriter writer = new ExcelWriterBuilder()
+                .autoCloseStream(true)
+                .file(response.getOutputStream())
+                .head(ExcelExportTest.class)
+                .build();
+        // xlsx文件上上限是104W行左右,这里如果超过104W需要分Sheet
+        WriteSheet writeSheet = new WriteSheet();
+        for (int i=0; i<100; i++) {
+            writer.write(getData(), writeSheet);
+        }
+        writer.finish();
+    }
+
+    private List<ExcelExportTest> getData() {
+        List<ExcelExportTest> list = new ArrayList<>(100);
+        for (int i = 0; i < 100; i++) {
+            list.add(ExcelExportTest.getEntity(i,i+10));
+        }
+        return list;
     }
 }
